@@ -134,6 +134,8 @@ type Item struct {
 	metricname string  `bigquery:"metricname"`
 	timestamp  int64   `bigquery:"timestamp"`
 	tags       string  `bigquery:"tags"`
+	region     string  `bigquery:"region"`
+	service    string  `bigquery:"service"`
 }
 
 // Save implements the ValueSaver interface.
@@ -143,6 +145,8 @@ func (i *Item) Save() (map[string]bigquery.Value, string, error) {
 		"metricname": i.metricname,
 		"timestamp":  i.timestamp,
 		"tags":       i.tags,
+		"region":     i.region,
+		"service":    i.service,
 	}, "", nil
 }
 
@@ -177,6 +181,19 @@ func (c *BigqueryClient) Write(timeseries []*prompb.TimeSeries) error {
 
 		t := tagsFromMetric(metric)
 
+		var region, service string
+		if t != "" {
+			var tagsMap map[string]interface{}
+			if err := json.Unmarshal([]byte(t), &tagsMap); err == nil {
+				if r, ok := tagsMap["region"]; ok {
+					region = r.(string)
+				}
+				if s, ok := tagsMap["service"]; ok {
+					service = s.(string)
+				}
+			}
+		}
+
 		for _, s := range samples {
 			v := float64(s.Value)
 			if math.IsNaN(v) || math.IsInf(v, 0) {
@@ -190,6 +207,8 @@ func (c *BigqueryClient) Write(timeseries []*prompb.TimeSeries) error {
 				metricname: string(metric[model.MetricNameLabel]),
 				timestamp:  model.Time(s.Timestamp).Unix(),
 				tags:       t,
+				region:     region,
+				service:    service,
 			})
 		}
 	}
@@ -311,7 +330,7 @@ func (c *BigqueryClient) buildCommand(q *prompb.Query) (string, error) {
 	matchers = append(matchers, fmt.Sprintf("timestamp >= TIMESTAMP_MILLIS(%v)", q.StartTimestampMs))
 	matchers = append(matchers, fmt.Sprintf("timestamp <= TIMESTAMP_MILLIS(%v)", q.EndTimestampMs))
 
-	query := fmt.Sprintf("SELECT metricname, tags, UNIX_MILLIS(timestamp) as timestamp, value FROM %s.%s WHERE %v ORDER BY timestamp", c.datasetID, c.tableID, strings.Join(matchers, " AND "))
+	query := fmt.Sprintf("SELECT metricname, tags, UNIX_MILLIS(timestamp) as timestamp, value, region, service FROM %s.%s WHERE %v ORDER BY timestamp", c.datasetID, c.tableID, strings.Join(matchers, " AND "))
 	level.Debug(c.logger).Log("msg", "BigQuery read", "sql query", query) //nolint:errcheck
 
 	return query, nil

@@ -1,26 +1,38 @@
 [
-    {
-      "description": "Name of the Prometheus metric",
-      "mode": "NULLABLE",
-      "name": "metricname",
-      "type": "STRING"
-    },
-    {
-      "description": "Prometheus metrics labels stored as JSON string",
-      "mode": "NULLABLE",
-      "name": "tags",
-      "type": "STRING"
-    },
-    {
-      "description": "Prometheus metrics timestamp",
-      "mode": "NULLABLE",
-      "name": "timestamp",
-      "type": "TIMESTAMP"
-    },
-    {
-        "description": "Value of the Prometheus metric",
-        "mode": "NULLABLE",
-        "name": "value",
-        "type": "FLOAT"
-      }
-  ]
+  {
+    "description": "Name of the Prometheus metric",
+    "mode": "NULLABLE",
+    "name": "metricname",
+    "type": "STRING"
+  },
+  {
+    "description": "Prometheus metrics labels stored as JSON string",
+    "mode": "NULLABLE",
+    "name": "tags",
+    "type": "STRING"
+  },
+  {
+    "description": "Region name",
+    "mode": "NULLABLE",
+    "name": "region",
+    "type": "STRING"
+  },
+  {
+    "description": "Service name",
+    "mode": "NULLABLE",
+    "name": "service",
+    "type": "STRING"
+  },
+  {
+    "description": "Prometheus metrics timestamp",
+    "mode": "NULLABLE",
+    "name": "timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "description": "Value of the Prometheus metric",
+    "mode": "NULLABLE",
+    "name": "value",
+    "type": "FLOAT"
+  }
+]
